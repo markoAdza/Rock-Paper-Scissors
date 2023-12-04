@@ -27,6 +27,19 @@ while True:
 
     # find hands
     hands, img = detector.findHands(imgScaled)
+    if hands:
+        playerMove = None
+        hand = hands[0]
+        fingers = detector.fingersUp(hand)
+        if fingers == [0, 0, 0, 0, 0]: # rock
+            playerMove = 1
+            cv2.putText(imgBG, "ROCK", (955,700),cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
+        if fingers == [1, 1, 1, 1, 1]: # paper
+            playerMove = 2
+            cv2.putText(imgBG, "PAPER", (955,700),cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
+        if fingers == [0, 1, 1, 0, 0]: # scissors
+            playerMove = 3
+            cv2.putText(imgBG, "SCISSORS", (955,700),cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
 
     if startGame:
 
