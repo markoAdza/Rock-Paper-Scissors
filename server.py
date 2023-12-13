@@ -16,7 +16,7 @@ s.listen(2)
 print("Waiting for a connection, Server Started")
 
 connected = set()
-games = {}
+games: dict[int, Game] = {}
 idCount = 0
 
 
@@ -35,8 +35,10 @@ def threaded_client(conn, p, gameId):
                 if not data:
                     break
                 else:
-                    if data == "reset":
-                        game.resetWent()
+                    if data == "ready":
+                        game.playerReady(p)
+                    elif data == "reset":
+                        game.reset()
                     elif data != "get":
                         game.play(p, data)
 
@@ -68,7 +70,6 @@ while True:
         games[gameId] = Game(gameId)
         print("Creating a new game...")
     else:
-        games[gameId].ready = True
         p = 1
 
 

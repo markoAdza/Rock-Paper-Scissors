@@ -27,8 +27,7 @@ if useCam:
 
     detector = HandDetector(maxHands=1)
 
-timer = 0
-countingDown = False
+initialTime = None
 scores = [0,0]
 
 gameType = int(input("Select game type (AI 1, CONNECT 2): "))
@@ -38,7 +37,6 @@ imgAI = []
 id = 1
 if gameType == 1:
     offlineGame = Game(0)
-    offlineGame.ready = True
 elif gameType == 2:
     n = Network(input("Specify server ip address: "))
     id = int(n.getP())
@@ -91,12 +89,15 @@ while True:
         else:
             playerMove = None
 
-    if countingDown:
+    if game.canStart() and initialTime == None:
+        initialTime = time.time()
+
+    if initialTime != None:
         timer = time.time() - initialTime
         cv2.putText(imgBG, str(int(timer)), (605,435),cv2.FONT_HERSHEY_PLAIN, 6, (255, 0, 255), 4)
 
         if timer > 3:
-            countingDown = False
+            initialTime = None
 
             if n == None:
                 game.play(other_id(id), 'RPS'[random.randint(0, 2)])
@@ -110,6 +111,11 @@ while True:
                 else:
                     scores[other_id(id)]+=1
 
+            if n == None:
+                game.reset()
+            else:
+                game = n.send("reset")
+
             moveNum = 1
             if game.moves[other_id(id)] == 'P':
                 moveNum = 2
@@ -118,7 +124,7 @@ while True:
 
             imgAI = cv2.imread(f'Resources/{moveNum}.png', cv2.IMREAD_UNCHANGED)            
 
-    if game.connected() and (playerMove != None):
+    if game.canStart() and (playerMove != None) and (initialTime != None):
         if n == None:
             if not game.p1Went:
                 game.play(id, playerMove)
@@ -139,11 +145,10 @@ while True:
     key = cv2.waitKey(1)
     if key == ord('b'):
         imgAI = []
-        countingDown = True
-        initialTime = time.time()
-
+        initialTime = None
         if n == None:
-            offlineGame = Game(0)
-            offlineGame.ready = True
+            offlineGame.reset()
+            offlineGame.playerReady(0)
+            offlineGame.playerReady(1)
         else:
-            game = n.send("reset")
+            game = n.send("ready")
