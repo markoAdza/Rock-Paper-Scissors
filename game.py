@@ -5,8 +5,7 @@ class Game:
         self.ready = [False, False]
         self.id = id
         self.moves = [None, None]
-        self.wins = [0,0]
-        self.ties = 0
+        self.scores = [0,0]
         self.countdown = 0
 
 
@@ -23,6 +22,11 @@ class Game:
             self.p1Went = True
         else:
             self.p2Went = True
+
+        if self.bothWent():
+            winner = self.winner()
+            if winner >= 0:
+                self.scores[winner] += 1
 
     def playerReady(self, player):
         self.ready[player] = True
@@ -45,7 +49,6 @@ class Game:
         return self.p1Went and self.p2Went
 
     def winner(self):
-
         p1 = self.moves[0].upper()[0]
         p2 = self.moves[1].upper()[0]
 

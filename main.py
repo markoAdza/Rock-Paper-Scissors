@@ -28,8 +28,6 @@ if useCam:
     detector = HandDetector(maxHands=1)
 
 initialTime = None
-scores = [0,0]
-
 gameType = int(input("Select game type (AI 1, CONNECT 2): "))
 offlineGame = Game
 n = None
@@ -102,15 +100,6 @@ while True:
             if n == None:
                 game.play(other_id(id), 'RPS'[random.randint(0, 2)])
 
-            if game.bothWent():
-                if game.winner() == -1:
-                    print("tie!")
-                elif game.winner() == id:
-                    print("win!")
-                    scores[id]+=1
-                else:
-                    scores[other_id(id)]+=1
-
             if n == None:
                 game.reset()
             else:
@@ -136,8 +125,8 @@ while True:
     if len(imgAI) > 0:
         imgBG = cvzone.overlayPNG(imgBG, imgAI, (149, 310))
 
-    cv2.putText(imgBG, str(scores[0]), (410,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
-    cv2.putText(imgBG, str(scores[1]), (1112,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
+    cv2.putText(imgBG, str(game.scores[other_id(id)]), (410,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
+    cv2.putText(imgBG, str(game.scores[id]), (1112,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
 
     # cv2.imshow('image', img)
     cv2.imshow('BG', imgBG)
