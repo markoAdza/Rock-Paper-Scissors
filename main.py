@@ -7,6 +7,7 @@ import time
 import random
 from network import Network
 from game import Game
+from tactics import Tactic
 import sys
 import numpy as np
 
@@ -32,11 +33,14 @@ displayedScores = [0,0]
 lastWin = None
 gameType = int(input("Select game type (AI 1, CONNECT 2): "))
 offlineGame = Game
+tactic = Tactic()
 n = None
 imgAI = []
 id = 1
 if gameType == 1:
     offlineGame = Game(0)
+    selectedTacticFromPlayer = int(input("Select a tactic you would like to play againts (Random 0, Counter 1, PersistSwitch 2, P1 History 3, P1 and AI History 4): "))
+    tactic.select_tactic(selectedTacticFromPlayer)
 elif gameType == 2:
     n = Network(input("Specify server ip address: "))
     id = int(n.getP())
@@ -59,7 +63,6 @@ while True:
         imgMap = {'R': 1, 'P':2, 'S': 3}
         img = cv2.imread(f'Resources/{imgMap[game.moves[id]]}.png', cv2.IMREAD_UNCHANGED)
         imgScaled = cv2.resize(img, (276, 276))
-
 
     # find hands
     hands = None
@@ -101,7 +104,22 @@ while True:
             initialTime = None
 
             if n == None:
-                game.play(other_id(id), 'RPS'[random.randint(0, 2)])
+                moveAI = tactic.get_AI_move()
+                tactic.add_AI_move(moveAI) # store AI moves
+                game.play(other_id(id), moveAI) # tactic
+                tactic.currentWinner = game.winner() #-1 draw, 0 AI, 1 Player
+                
+            if (playerMove == 'R'):
+                tactic.add_player_move("R")
+            if (playerMove == 'P'):
+                tactic.add_player_move("P")
+            if (playerMove == 'S'):
+                tactic.add_player_move("S")
+
+            if game.bothWent():
+                displayedScores[0] = game.scores[0]
+                displayedScores[1] = game.scores[1]
+                lastWin = game.winner()
 
             if game.bothWent():
                 displayedScores[0] = game.scores[0]
@@ -119,7 +137,12 @@ while True:
             elif game.moves[other_id(id)] == 'S':
                 moveNum = 3
 
-            imgAI = cv2.imread(f'Resources/{moveNum}.png', cv2.IMREAD_UNCHANGED)            
+            imgAI = cv2.imread(f'Resources/{moveNum}.png', cv2.IMREAD_UNCHANGED)     
+
+            tactic.roundsRemaining -= 1
+            if tactic.roundsRemaining == 0:
+                tactic.select_tactic()       
+                cv2.putText(imgBG, f"{tactic.get_tactic_name()}", (100, 210), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
 
     if game.canStart() and (playerMove != None) and (initialTime != None):
         if n == None:
@@ -132,6 +155,9 @@ while True:
 
     if len(imgAI) > 0:
         imgBG = cvzone.overlayPNG(imgBG, imgAI, (149, 310))
+
+    if tactic:
+        cv2.putText(imgBG, f"{tactic.get_tactic_name()}", (100, 210), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
 
     cv2.putText(imgBG, str(displayedScores[other_id(id)]), (410,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
     cv2.putText(imgBG, str(displayedScores[id]), (1112,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
