@@ -5,6 +5,7 @@ class Game:
         self.ready = [False, False]
         self.id = id
         self.moves = [None, None]
+        self.names = ['', '']
         self.scores = [0,0]
         self.countdown = 0
 
@@ -15,6 +16,9 @@ class Game:
         :return: Move
         """
         return self.moves[p]
+    
+    def setName(self, player, name):
+        self.names[player] = name
 
     def play(self, player, move):
         self.moves[player] = move

@@ -31,19 +31,24 @@ if useCam:
 initialTime = None
 displayedScores = [0,0]
 lastWin = None
+name = str(input("Input your username: "))
 gameType = int(input("Select game type (AI 1, CONNECT 2): "))
 offlineGame = Game
-tactic = Tactic()
 n = None
 imgAI = []
 id = 1
+tactic = None
 if gameType == 1:
     offlineGame = Game(0)
     selectedTacticFromPlayer = int(input("Select a tactic you would like to play againts (Random 0, Counter 1, PersistSwitch 2, P1 History 3, P1 and AI History 4): "))
+    tactic = Tactic()
     tactic.select_tactic(selectedTacticFromPlayer)
+    offlineGame.setName(other_id(id), tactic.get_tactic_name())
+    offlineGame.setName(id, name)
 elif gameType == 2:
     n = Network(input("Specify server ip address: "))
     id = int(n.getP())
+    n.send(f'name.{name}')
 
 while True:
     if n == None:
@@ -103,7 +108,7 @@ while True:
         if timer < 0:
             initialTime = None
 
-            if n == None:
+            if tactic != None:
                 moveAI = tactic.get_AI_move()
                 tactic.add_AI_move(moveAI) # store AI moves
                 game.play(other_id(id), moveAI) # tactic
@@ -133,10 +138,11 @@ while True:
 
             imgAI = cv2.imread(f'Resources/{moveNum}.png', cv2.IMREAD_UNCHANGED)     
 
-            tactic.roundsRemaining -= 1
-            if tactic.roundsRemaining == 0:
-                tactic.select_tactic()       
-                cv2.putText(imgBG, f"{tactic.get_tactic_name()}", (100, 210), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
+            if tactic != None:
+                tactic.roundsRemaining -= 1
+                if tactic.roundsRemaining == 0:
+                    tactic.select_tactic()       
+                    cv2.putText(imgBG, f"{tactic.get_tactic_name()}", (100, 210), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
 
     if game.canStart() and (playerMove != None) and (initialTime != None):
         if n == None:
@@ -150,8 +156,8 @@ while True:
     if len(imgAI) > 0:
         imgBG = cvzone.overlayPNG(imgBG, imgAI, (149, 310))
 
-    if tactic:
-        cv2.putText(imgBG, f"{tactic.get_tactic_name()}", (100, 210), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 255), 4)
+    cv2.putText(imgBG, f"{game.names[other_id(id)]}", (100, 210), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 2)
+    cv2.putText(imgBG, f"{game.names[id]}", (800, 210), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 2)
 
     cv2.putText(imgBG, str(displayedScores[other_id(id)]), (410,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
     cv2.putText(imgBG, str(displayedScores[id]), (1112,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)

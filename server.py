@@ -35,7 +35,9 @@ def threaded_client(conn, p, gameId):
                 if not data:
                     break
                 else:
-                    if data == "ready":
+                    if data.startswith('name.'):
+                        game.setName(p, data.split('.')[1])
+                    elif data == "ready":
                         game.playerReady(p)
                     elif data == "reset":
                         game.reset()
