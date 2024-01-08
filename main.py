@@ -28,6 +28,8 @@ if useCam:
     detector = HandDetector(maxHands=1)
 
 initialTime = None
+displayedScores = [0,0]
+lastWin = None
 gameType = int(input("Select game type (AI 1, CONNECT 2): "))
 offlineGame = Game
 n = None
@@ -91,14 +93,20 @@ while True:
         initialTime = time.time()
 
     if initialTime != None:
-        timer = time.time() - initialTime
-        cv2.putText(imgBG, str(int(timer)), (605,435),cv2.FONT_HERSHEY_PLAIN, 6, (255, 0, 255), 4)
+        timer = initialTime + 5 - time.time()
+        if timer >= 0:
+            cv2.putText(imgBG, str(round(timer, 1)), (570,435),cv2.FONT_HERSHEY_PLAIN, 6, (255, 0, 255), 4)
 
-        if timer > 3:
+        if timer < 0:
             initialTime = None
 
             if n == None:
                 game.play(other_id(id), 'RPS'[random.randint(0, 2)])
+
+            if game.bothWent():
+                displayedScores[0] = game.scores[0]
+                displayedScores[1] = game.scores[1]
+                lastWin = game.winner()
 
             if n == None:
                 game.reset()
@@ -125,16 +133,28 @@ while True:
     if len(imgAI) > 0:
         imgBG = cvzone.overlayPNG(imgBG, imgAI, (149, 310))
 
-    cv2.putText(imgBG, str(game.scores[other_id(id)]), (410,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
-    cv2.putText(imgBG, str(game.scores[id]), (1112,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
+    cv2.putText(imgBG, str(displayedScores[other_id(id)]), (410,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
+    cv2.putText(imgBG, str(displayedScores[id]), (1112,215),cv2.FONT_HERSHEY_PLAIN, 4, (255, 225, 255), 6)
 
-    # cv2.imshow('image', img)
+    if not game.canStart():
+        if game.ready[other_id(id)]:
+            cv2.putText(imgBG, f'Ready', (200,150),cv2.FONT_HERSHEY_PLAIN, 2, (28, 28, 255), 2)
+        if game.ready[id]:
+            cv2.putText(imgBG, f'Ready', (900,150),cv2.FONT_HERSHEY_PLAIN, 2, (28, 28, 255), 2)
+    
+    if lastWin == -1: 
+        cv2.putText(imgBG, 'Its a tie!', (505,100),cv2.FONT_HERSHEY_PLAIN, 4, (219, 110, 46), 3)
+    elif lastWin == other_id(id):
+        cv2.putText(imgBG, 'Opponent wins!', (420,100),cv2.FONT_HERSHEY_PLAIN, 4, (66, 117, 245), 3)
+    elif lastWin == id:
+        cv2.putText(imgBG, 'You win!', (505,100),cv2.FONT_HERSHEY_PLAIN, 4, (75, 194, 56), 3)
+
     cv2.imshow('BG', imgBG)
-    # cv2.imshow('Scaled', imgScaled)
     key = cv2.waitKey(1)
     if key == ord('b'):
         imgAI = []
         initialTime = None
+        lastWin = None
         if n == None:
             offlineGame.reset()
             offlineGame.playerReady(0)
