@@ -109,22 +109,16 @@ while True:
                 game.play(other_id(id), moveAI) # tactic
                 tactic.currentWinner = game.winner() #-1 draw, 0 AI, 1 Player
                 
-            if (playerMove == 'R'):
-                tactic.add_player_move("R")
-            if (playerMove == 'P'):
-                tactic.add_player_move("P")
-            if (playerMove == 'S'):
-                tactic.add_player_move("S")
+                if (playerMove == 'R'):
+                    tactic.add_player_move("R")
+                if (playerMove == 'P'):
+                    tactic.add_player_move("P")
+                if (playerMove == 'S'):
+                    tactic.add_player_move("S")
 
-            if game.bothWent():
-                displayedScores[0] = game.scores[0]
-                displayedScores[1] = game.scores[1]
-                lastWin = game.winner()
-
-            if game.bothWent():
-                displayedScores[0] = game.scores[0]
-                displayedScores[1] = game.scores[1]
-                lastWin = game.winner()
+            displayedScores[0] = game.scores[0]
+            displayedScores[1] = game.scores[1]
+            lastWin = game.winner()
 
             if n == None:
                 game.reset()
